@@ -48,12 +48,12 @@ Details
 * Use your items object to create classes, with model().  model() takes 
   three types of arguments:
     
-    model_name   => The name of your new class (technically it does not have
-                    to be the same name, but this makes the most sense).
-    column types => Any variables you want your class to have.  In the 
-                    above example, 'name' is a variable and 'str' is the 
-                    column type.  See <items.column_mapping> for options.
-    callables    => Any functions you want your class to have.
+      model_name   => The name of your new class (technically it does not have
+                      to be the same name, but this makes the most sense).
+      column types => Any variables you want your class to have.  In the 
+                      above example, 'name' is a variable and 'str' is the 
+                      column type.  See <items.column_mapping> for options.
+      callables    => Any functions you want your class to have.
 
 * Models come built with an __init__ function and a __repr__ function.  Any
   others you want you have to give to the constructor:
