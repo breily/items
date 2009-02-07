@@ -6,9 +6,6 @@ from sqlalchemy.orm import sessionmaker, mapper
 class ModelError(Exception): pass
 
 class Items(object):
-    #def __init__(self, engine_type='sqlite', engine_location=':memory:'):
-        #if engine_type == 'sqlite': engine_location = '/' + engine_location
-        #engine_name = engine_type + '://' + engine_location
     def __init__(self, engine_name='sqlite:///:memory:'):    
         self.engine = create_engine(engine_name)
         self.session = sessionmaker(bind=self.engine)()

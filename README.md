@@ -34,16 +34,12 @@ Example Usage
 Details
 -------
 
-* First, create an Items object.  This takes two optional arguments:
+* First, create an Items object.  This takes the optional argument:
     
-        engine_type     => By default, 'sqlite'
-        engine_location => By default, ':memory:'
+        engine_name => By default, 'sqlite:///:memory:'
 
-  See http://sqlalchemy.org/docs/05/dbengine.html for details.
-
-  In 'driver://username:password@host:port/database', driver would be the
-  engine_type argument.  Everything after (except for the '://') is the
-  engine_location argument.
+  See http://sqlalchemy.org/docs/05/dbengine.html for details on what
+  makes up an engine name.
 
 * Use your items object to create classes, with model().  model() takes 
   three types of arguments:
