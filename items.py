@@ -3,16 +3,20 @@ from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, String,
                        DateTime, Interval, Binary, Boolean, PickleType)
 from sqlalchemy.orm import sessionmaker, mapper
 
+class ModelError(Exception): pass
+
 class Items(object):
-    def __init__(self, engine_type='sqlite', engine_location=':memory:'):
-        if engine_type == 'sqlite': engine_location = '/' + engine_location
-        engine_name = engine_type + '://' + engine_location
+    #def __init__(self, engine_type='sqlite', engine_location=':memory:'):
+        #if engine_type == 'sqlite': engine_location = '/' + engine_location
+        #engine_name = engine_type + '://' + engine_location
+    def __init__(self, engine_name='sqlite:///:memory:'):    
         self.engine = create_engine(engine_name)
         self.session = sessionmaker(bind=self.engine)()
         self.models = {}
 
     def model(self, model_name, **kwargs):
         # Start building the __dict__ for the class
+        # These functions defined below
         cls_dict = {'__init__': init_func,
                     '__name__': model_name,
                     '__repr__': repr_func 
@@ -28,8 +32,10 @@ class Items(object):
             elif type(v) == str:
                 v = v.lower()
                 if v in column_mapping: v = column_mapping[v]
-                else: raise NameError("'%s' is not an allowed database column" %v)
+                else: raise ModelError("'%s' is not an allowed database column" %v)
                 cols.append(Column(k, v))
+        if len(cols) == 1:
+            raise ModelError("Must have at least one column other than id")
         # Create the class
         new_model = ModelConstructor(model_name, (object,), cls_dict)
         # Setup the table
