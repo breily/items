@@ -12,6 +12,8 @@ Items
 Example Usage
 -------------
 
+<!--
+
     import items
     it = items.Items() # Creates 'sqlite:///:memory:'
     
@@ -28,6 +30,22 @@ Example Usage
     it.find(Person).all()
     => [<Person: 1>]
     it.find(Person).all()[0].name
+    => u'brian'
+
+-->
+
+    import items
+    it = items.Items() # Creates 'sqlite:///:memory:'
+    
+    Person = it.model('Person', name='str')
+    brian = Person(name='brian')
+     
+    it.add(brian)
+    it.commit()
+     
+    p = it.find(Person).all()
+    => [<Person: 1>]
+    p.name
     => u'brian'
 
 
