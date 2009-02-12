@@ -12,39 +12,15 @@ Items
 Example Usage
 -------------
 
-<!--
-
     import items
     it = items.Items() # Creates 'sqlite:///:memory:'
     
     Person = it.model('Person', name='str')
     brian = Person(name='brian')
+    brian.save()
      
-    it.add(brian)
-    it.session.new
-    => IdentitySet([<Person: None>])
-    it.commit()
-    it.session.new
-    => IdentitySet([])
-     
-    it.find(Person).all()
-    => [<Person: 1>]
-    it.find(Person).all()[0].name
-    => u'brian'
-
--->
-
-    import items
-    it = items.Items() # Creates 'sqlite:///:memory:'
-    
-    Person = it.model('Person', name='str')
-    brian = Person(name='brian')
-     
-    it.add(brian)
-    it.commit()
-     
-    p = it.find(Person).all()
-    => [<Person: 1>]
+    p = it.find(Person).first()
+    => <Person: 1>
     p.name
     => u'brian'
 
@@ -77,12 +53,21 @@ Details
         p.double(17)
         => 34
 
+* Models also come with a find() function and a save() function:
+    
+        Person.find() => Returns a SQLAlchemy Query object.  Acts the same as
+                         it.find(Person).
+        p.save()      => Used on an instance of your model, it is shorthand
+                         for `it.add(p); it.commit();`.
+
 * To access the database, your Items object includes a number of methods:
     
         it.find(Person)  => Returns a SQLAlchemy query object.
         it.add(instance) => Add an instance (or multiple instances) to the current 
                             session.
         it.commit()      => Commit any pending changes.
+
+
 
 * You can also use the session object to do these things directly:
     

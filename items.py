@@ -22,6 +22,7 @@ class Items(object):
         cls_dict = {'__init__': init_func,
                     '__name__': model_name,
                     '__repr__': repr_func,
+                    'save':     save_func,
                     '__self__': None,
                     'session':  self.session,
                     'find':     None,
@@ -49,7 +50,7 @@ class Items(object):
         # becomes a staticmethod so we can do Person.find(), instead of p.find()
         new_model.find = staticmethod(lambda: find_func(new_model))
 
-        #new_model.__getattribute__ = lambda attr: attr_func(new_model, attr)
+        #new_model.__getattribute__ = staticmethod(lambda attr: attr_func(new_model, attr))
         #new_model.__getattr__ = staticmethod(lambda attr: attr_func(new_model, attr))
 
         # Setup the table
@@ -99,22 +100,29 @@ column_mapping = {'string':      String,      'str':      String,
 
 # Generic __init__ to set instance variables of a class.
 def init_func(self, **kwargs):
-    print self.__dict__.items()
     for key, val in kwargs.items():
         self.__dict__[key] = val
-    print self.__dict__.items()
-
 
 # Generic __repr__ to print the class name and database id
 def repr_func(self):
     return '<%s: %s>' %(self.__name__, self.id)
+
+# Add and commit and instance to the session
+def save_func(self):
+    _session.add(self)
+    _session.commit()
+    return self
 
 # Uses global session value to get a query object for the class passed
 # to the function.
 def find_func(cls):
     return _session.query(cls)
 
+# Code below in progress, not currently used
+
 def attr_func(self, attr):
+    if attr in ['__name__', '__repr__', '__init__']:
+        return object.__getattribute__(attr)
     q = self.find()
     print 'self: %s' %self
     print 'attr: %s' %attr
@@ -130,4 +138,8 @@ Maybe make the model into the session?
     Book.filter(Book.name.like="Fight%")
 
 Then get rid of the Items controller.
+
+Notes:
+    Book.__getattribute__('all')() works
+    Book.all() does not
 """

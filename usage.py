@@ -10,6 +10,10 @@ fc = Book(name="Fight Club", author="Chuck P.", length=213)
 it.add(hhgtg, fc)
 it.commit()
 
+# Could also be:
+#   hhtgt.save()
+#   fc.save()
+
 print "My Books: "
-for b in it.find(Book).all():
+for b in Book.find().all():
     print "\t%s by %s (%s pages)" %(b.name, b.author, b.length)
