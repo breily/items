@@ -25,8 +25,15 @@ class Items(object):
                     'save':     save_func,
                     '__self__': None,
                     'session':  self.session,
-                    'find':     None,
                     'hub':      self,
+                    # Static methods
+                    'find':      None,
+                    # Static Query object methods
+                    'all':       None,
+                    'count':     None,
+                    'filter':    None,
+                    'filter_by': None,
+                    'first':     None,
                    }
         # Automatically include an 'id' column
         cols = [ Column('id', Integer, primary_key=True), ]
@@ -48,8 +55,13 @@ class Items(object):
         # Wrap the find function in a lambda so that we can pass in the class
         # now, instead of needing to do that later.  Make sure the lambda
         # becomes a staticmethod so we can do Person.find(), instead of p.find()
-        new_model.find = staticmethod(lambda: find_func(new_model))
-
+        new_model.find      = staticmethod(lambda: find_func(new_model))
+        new_model.all       = staticmethod(lambda: all_func(new_model))
+        new_model.count     = staticmethod(lambda: count_func(new_model))
+        new_model.filter    = staticmethod(lambda criterion: filter_func(new_model, criterion))
+        new_model.filter_by = staticmethod(lambda **kwargs: filter_by_func(new_model, **kwargs))
+        new_model.first     = staticmethod(lambda: first_func(new_model))
+        # Hopefully replace all of that with __getattribute__
         #new_model.__getattribute__ = staticmethod(lambda attr: attr_func(new_model, attr))
         #new_model.__getattr__ = staticmethod(lambda attr: attr_func(new_model, attr))
 
@@ -113,10 +125,17 @@ def save_func(self):
     _session.commit()
     return self
 
-# Uses global session value to get a query object for the class passed
-# to the function.
-def find_func(cls):
-    return _session.query(cls)
+### Query functions
+
+def find_func(cls): return cls.session.query(cls)
+
+# Hopefully listing all is will be unnecessary and I'll be able to 
+# automatically pass them to query().
+def all_func(cls): return cls.session.query(cls).all()
+def count_func(cls): return cls.session.query(cls).count()
+def first_func(cls): return cls.session.query(cls).first()
+def filter_func(cls, criterion): return cls.session.query(cls).filter(criterion)
+def filter_by_func(cls, **kwargs): return cls.session.query(cls).filter_by(**kwargs)
 
 # Code below in progress, not currently used
 
