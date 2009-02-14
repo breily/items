@@ -5,16 +5,12 @@ from sqlalchemy.orm import sessionmaker, mapper
 
 class ModelError(Exception): pass
 
-_session = None
 
 class Items(object):
     def __init__(self, engine_name='sqlite:///:memory:'):    
         self.engine = create_engine(engine_name)
         self.session = sessionmaker(bind=self.engine)()
         self.models = {}
-        global _session, _hub
-        _session = self.session
-        _hub = self
 
     def model(self, model_name, **kwargs):
         # Start building the __dict__ for the class
@@ -23,11 +19,11 @@ class Items(object):
                     '__name__': model_name,
                     '__repr__': repr_func,
                     'save':     save_func,
-                    '__self__': None,
                     'session':  self.session,
                     'hub':      self,
                     # Static methods
-                    'find':      None,
+                    '__self__': None,
+                    'find':     None,
                     # Static Query object methods
                     'all':       None,
                     'count':     None,
@@ -39,8 +35,12 @@ class Items(object):
         cols = [ Column('id', Integer, primary_key=True), ]
         # Parse kwargs to get column definitions and class functions
         for k, v in kwargs.items():
+            # Allow users to include their own columns
+            if isinstance(v, Column):
+                if not v.name: v.name = k
+                cols.append(v)
             # These would be functions - we just add them to the __dict__
-            if callable(v):
+            elif callable(v):
                 cls_dict[k] = v
             # These would be column types - we add a corresponding SQLAlchemy column
             elif type(v) == str:
@@ -55,12 +55,13 @@ class Items(object):
         # Wrap the find function in a lambda so that we can pass in the class
         # now, instead of needing to do that later.  Make sure the lambda
         # becomes a staticmethod so we can do Person.find(), instead of p.find()
+        new_model.__self__  = new_model
         new_model.find      = staticmethod(lambda: find_func(new_model))
         new_model.all       = staticmethod(lambda: all_func(new_model))
         new_model.count     = staticmethod(lambda: count_func(new_model))
+        new_model.first     = staticmethod(lambda: first_func(new_model))
         new_model.filter    = staticmethod(lambda criterion: filter_func(new_model, criterion))
         new_model.filter_by = staticmethod(lambda **kwargs: filter_by_func(new_model, **kwargs))
-        new_model.first     = staticmethod(lambda: first_func(new_model))
         # Hopefully replace all of that with __getattribute__
         #new_model.__getattribute__ = staticmethod(lambda attr: attr_func(new_model, attr))
         #new_model.__getattr__ = staticmethod(lambda attr: attr_func(new_model, attr))
@@ -112,8 +113,7 @@ column_mapping = {'string':      String,      'str':      String,
 
 # Generic __init__ to set instance variables of a class.
 def init_func(self, **kwargs):
-    for key, val in kwargs.items():
-        self.__dict__[key] = val
+    for key, val in kwargs.items(): self.__dict__[key] = val
 
 # Generic __repr__ to print the class name and database id
 def repr_func(self):
@@ -121,8 +121,8 @@ def repr_func(self):
 
 # Add and commit and instance to the session
 def save_func(self):
-    _session.add(self)
-    _session.commit()
+    self.session.add(self)
+    self.session.commit()
     return self
 
 ### Query functions
@@ -131,10 +131,10 @@ def find_func(cls): return cls.session.query(cls)
 
 # Hopefully listing all is will be unnecessary and I'll be able to 
 # automatically pass them to query().
-def all_func(cls): return cls.session.query(cls).all()
-def count_func(cls): return cls.session.query(cls).count()
-def first_func(cls): return cls.session.query(cls).first()
-def filter_func(cls, criterion): return cls.session.query(cls).filter(criterion)
+def all_func(cls):                 return cls.session.query(cls).all()
+def count_func(cls):               return cls.session.query(cls).count()
+def first_func(cls):               return cls.session.query(cls).first()
+def filter_func(cls, criterion):   return cls.session.query(cls).filter(criterion)
 def filter_by_func(cls, **kwargs): return cls.session.query(cls).filter_by(**kwargs)
 
 # Code below in progress, not currently used
