@@ -95,28 +95,34 @@ class ModelConstructor(type):
         super(ModelConstructor, cls).__init__(name, bases, dct)
 
 # Map SQLAlchemy's types to string versions of them for convenience
-column_mapping = {'string':      String,      'str':      String,
-                  'integer':     Integer,     'int':      Integer, 
-                  'unicode':     Unicode,     'text':     Text,
-                  'unicodetext': UnicodeText, 'date':     Date,
-                  'numeric':     Numeric,     'time':     Time,
-                  'float':       Float,       'datetime': DateTime,
-                  'interval':    Interval,    'binary':   Binary,
-                  'boolean':     Boolean,     'bool':     Boolean,
+column_mapping = {'string':      String,      'str': String,
+                  'integer':     Integer,     'int': Integer, 
+                  'unicode':     Unicode,
+                  'text':        Text,
+                  'unicodetext': UnicodeText,
+                  'date':        Date,
+                  'numeric':     Numeric,
+                  'time':        Time,
+                  'float':       Float,
+                  'datetime':    DateTime,
+                  'interval':    Interval,
+                  'binary':      Binary,
+                  'boolean':     Boolean,     'bool': Boolean,
                   'pickletype':  PickleType,
                  }
 
-#
+###
 # Functions added to created classes
-#
+###
 
 # Generic __init__ to set instance variables of a class.
 def init_func(self, **kwargs):
-    for key, val in kwargs.items(): self.__dict__[key] = val
+    for key, val in kwargs.items(): 
+        self.__dict__[key] = val
 
 # Generic __repr__ to print the class name and database id
 def repr_func(self):
-    return '<%s: %s>' %(self.__name__, self.id)
+    return '<%s: %s>' % (self.__name__, self.id)
 
 # Add and commit and instance to the session
 def save_func(self):
@@ -138,15 +144,15 @@ def filter_by_func(cls, **kwargs): return cls.session.query(cls).filter_by(**kwa
 
 # Code below in progress, not currently used
 
-def attr_func(self, attr):
-    if attr in ['__name__', '__repr__', '__init__']:
-        return object.__getattribute__(attr)
-    q = self.find()
-    print 'self: %s' %self
-    print 'attr: %s' %attr
-    print 'q: %s' %q
-    return q.__getattribute__(attr)
-    #return lambda: q.__getattribute__(attr)
+def attr_func(self, attr, *args, **kwargs):
+    if attr in ['all']:
+        q = self.find()
+        print 'self: %s' %self
+        print 'attr: %s' %attr
+        print 'q: %s' %q
+        return q.__getattribute__(attr)
+        #return lambda: q.__getattribute__(attr)
+    raise NotImplemented('%s does not implement %s' % (self.__name__, attr))
 
 """
 Maybe make the model into the session?
