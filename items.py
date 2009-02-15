@@ -1,10 +1,9 @@
 from sqlalchemy import (create_engine, Table, MetaData, Column, Integer, String,
-                       Unicode, Text, UnicodeText, Date, Numeric, Time, Float,
-                       DateTime, Interval, Binary, Boolean, PickleType)
+                        Unicode, Text, UnicodeText, Date, Numeric, Time, Float,
+                        DateTime, Interval, Binary, Boolean, PickleType)
 from sqlalchemy.orm import sessionmaker, mapper
 
 class ModelError(Exception): pass
-
 
 class Items(object):
     def __init__(self, engine_name='sqlite:///:memory:'):    
